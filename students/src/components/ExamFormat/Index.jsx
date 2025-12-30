@@ -95,14 +95,18 @@ const ExamFormat = () => {
       <div className="exam mt-5">
         <div className="exam-box">
           <div className="h-[97vh] w-full  border-indigo-500/50 ">
-            <h1 className="text-3xl font-bold text-center mt-1">Select Exam</h1>
-            <h3 className="text-2xl ml-2 mt-[-30px] "> User Name</h3>
+            <h1 className="text-3xl font-bold text-center mt-1">Select Exam:- jee</h1>
+            <h3 className="text-2xl ml-2 mt-[-30px] "> User Name:- Kunal</h3>
+            <h2 className="text-2xl ml-55 mt-[-30px]">class:- 12th</h2>
+              <h2 className="text-2xl ml-87 mt-[-30px]">Marks:- 50</h2>
+               
             <p className="text-end mt-[-30px] mr-10">
               <StopWatch />
+                <h2 className="text-2xl mr-40 mt-[-30px]">Dates:- 12/3/2025</h2>
             </p>
             <div className=" w-full  border-indigo-500/50 mt-2"></div>
             <div className="exam-format-box flex items-center justify-center mt-10">
-              <div className="w-[150vh] h-[5vh] border-2 rounded-md border-indigo-500/50 ">
+              <div className="w-[150vh] h-[5vh]  rounded-md border-indigo-500/50 ">
                 <h1 className="text-center mt-1">
                   Q{currentIndex + 1}. {currentQuestion.question}
                 </h1>
