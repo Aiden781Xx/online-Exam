@@ -1,44 +1,115 @@
 import React, { useState } from "react";
-import { Button, TextField, Card, CardContent } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  InputAdornment,
+  Stack,
+  Box,
+} from "@mui/material";
+
+const clamp = (value, min = 0, max = Infinity) => {
+  const n = Number(value);
+  if (Number.isNaN(n)) return "";
+  return String(Math.max(min, Math.min(max, Math.floor(n))));
+};
+
 const ExamClock = () => {
-  
-   const [examTime, setExamTime] = useState("");
+  const [hours, setHours] = useState("");
+  const [minutes, setMinutes] = useState("");
+  const [seconds, setSeconds] = useState("");
+
+  const minutesValid = minutes === "" || (Number(minutes) >= 0 && Number(minutes) <= 59);
+  const secondsValid = seconds === "" || (Number(seconds) >= 0 && Number(seconds) <= 59);
 
   const handleSave = () => {
-    alert(`Exam time saved: ${examTime} minutes`);
-    // later: is time ko backend / student page pe bhejenge
+    const h = Number(hours || 0);
+    const m = Number(minutes || 0);
+    const s = Number(seconds || 0);
+
+    const totalSeconds = h * 3600 + m * 60 + s;
+
+    alert(
+      `Exam Time Saved: ${h}h ${m}m ${s}s\nTotal Seconds: ${totalSeconds}`
+    );
+
+    // TODO: send totalSeconds to backend
   };
+
   return (
-    <>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 60 }}>
-      <Card sx={{ width: 380 }}>
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 8, px: 2 }}>
+      <Card sx={{ width: "100%", maxWidth: 520 }}>
         <CardContent>
-          <h2 style={{ textAlign: "center" }}>Teacher Panel</h2>
+          <Typography variant="h6" align="center" gutterBottom>
+            Teacher Panel — Set Exam Time
+          </Typography>
 
-          <TextField
-            fullWidth
-            type="number"
-            label="Exam Time (Minutes)"
-            value={examTime}
-            onChange={(e) => setExamTime(e.target.value)}
-          />
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Hours"
+                value={hours}
+                onChange={(e) => setHours(clamp(e.target.value, 0, 99))}
+                InputProps={{ endAdornment: <InputAdornment position="end">h</InputAdornment> }}
+                helperText="Enter hours (0-99)"
+              />
+            </Grid>
 
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ marginTop: 2 }}
-            onClick={handleSave}
-            disabled={!examTime}
-          >
-            Save Exam Time
-          </Button>
+            <Grid item xs={6} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Minutes"
+                value={minutes}
+                onChange={(e) => setMinutes(clamp(e.target.value, 0, 59))}
+                error={!minutesValid}
+                helperText={!minutesValid ? "Must be 0–59" : "Enter minutes (0-59)"}
+                InputProps={{ endAdornment: <InputAdornment position="end">m</InputAdornment> }}
+              />
+            </Grid>
 
-         
+            <Grid item xs={6} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Seconds"
+                value={seconds}
+                onChange={(e) => setSeconds(clamp(e.target.value, 0, 59))}
+                error={!secondsValid}
+                helperText={!secondsValid ? "Must be 0–59" : "Enter seconds (0-59)"}
+                InputProps={{ endAdornment: <InputAdornment position="end">s</InputAdornment> }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+                <Button
+                  variant="contained"
+                  onClick={handleSave}
+                  disabled={(hours === "" && minutes === "" && seconds === "") || !minutesValid || !secondsValid}
+                >
+                  Save Exam Time
+                </Button>
+
+                <Typography variant="body2" color="text.secondary">
+                  Preview: {hours || 0}h {minutes || 0}m {seconds || 0}s
+                </Typography>
+
+                <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
+                  Note: Minutes and seconds must be 0–59
+                </Typography>
+              </Stack>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
-    </div>
-    </>
-  )
-}
+    </Box>
+  );
+};
 
-export default ExamClock
+export default ExamClock;

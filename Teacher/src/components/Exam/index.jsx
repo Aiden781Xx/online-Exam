@@ -20,10 +20,14 @@ const Exam = () => {
             </Link>
         </div>
           <div className='text-center mt-9 ' >
+            <Link to='/view-exam'>
             <Button className='!bg-blue-400 !text-black !px-4 !py-2 !rounded !mr-5 hover:!bg-zinc-300'>View Exam</Button>
+            </Link>
         </div>
           <div className='text-center mt-9 ' >
+            <Link to='/show'>
             <Button className='!bg-blue-400 !text-black !px-4 !py-2 !rounded !mr-5 hover:!bg-zinc-300'>Show Result</Button>
+            </Link>
         </div>
         </div>
     </>

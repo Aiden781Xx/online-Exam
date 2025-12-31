@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const AddExam = () => {
   return (
     <>
-      <div className="exam1 min-h-screen bg-gray-50">
+      <div className="exam1 min-h-screen ">
         <div className="format max-w-7xl mx-auto px-5">
 
           {/* ===== Header ===== */}
@@ -30,7 +30,7 @@ const AddExam = () => {
           <div className="exam-card flex gap-6 flex-wrap mt-6">
 
             {/* Card 1 */}
-            <div className="w-[280px] p-5 border rounded-lg bg-white shadow-sm">
+            <div className="w-[280px] p-5 border rounded-lg shadow-sm">
               <div className="mb-3">
                 <label className="font-semibold">Exam Name :Hindi</label>
                 <input
@@ -77,7 +77,7 @@ const AddExam = () => {
             </div>
 
             {/* Card 2 (Empty / Add New) */}
-            <div className="w-[280px] p-5 border rounded-lg bg-white flex items-center justify-center">
+            <div className="w-[280px] p-5 border rounded-lg  flex items-center justify-center">
               <Button
                 variant="outlined"
                 startIcon={<IoMdAdd />}
