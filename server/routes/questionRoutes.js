@@ -1,47 +1,40 @@
 import express from "express";
 import {
-  createExam,
-  getAllExams,
-  getExamsForStudent,
-  getExamById,
-  updateExam,
-  deleteExam,
-} from "../controllers/examController.js";
+  addQuestion,
+  addMultipleQuestions,
+  getQuestionsByExam,
+  updateQuestion,
+  deleteQuestion,
+} from "../controllers/questionController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.get(
-  "/student",
-  authenticate,
-  authorize("student"),
-  getExamsForStudent
-);
 router.post(
   "/",
   authenticate,
   authorize("teacher", "principal"),
-  createExam
+  addQuestion
 );
-router.get(
-  "/",
+router.post(
+  "/bulk",
   authenticate,
   authorize("teacher", "principal"),
-  getAllExams
+  addMultipleQuestions
 );
-router.get("/:id", authenticate, getExamById);
+router.get("/exam/:examId", authenticate, getQuestionsByExam);
 router.put(
   "/:id",
   authenticate,
   authorize("teacher", "principal"),
-  updateExam
+  updateQuestion
 );
 router.delete(
   "/:id",
   authenticate,
   authorize("teacher", "principal"),
-  deleteExam
+  deleteQuestion
 );
 
 export default router;

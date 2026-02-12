@@ -1,186 +1,186 @@
-import React, { useState } from "react";
-import StopWatch from "../StopWatch/Index";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Radio from "@mui/material/Radio";
 import Button from "@mui/material/Button";
-import { GrFormNext } from "react-icons/gr";
-import { GrFormPrevious } from "react-icons/gr";
-import { Link } from "react-router-dom";
+import { GrFormNext, GrFormPrevious } from "react-icons/gr";
+import api from "../../api/axios";
+import StopWatch from "../StopWatch/Index";
 
 const ExamFormat = () => {
-  const [selectedValue, setSelectedValue] = React.useState("a");
+  const { examId } = useParams();
+  const navigate = useNavigate();
+  const [exam, setExam] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const u = localStorage.getItem("studentUser");
+    if (!u) {
+      navigate("/");
+      return;
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!examId) return;
+    Promise.all([
+      api.get(`/exams/${examId}`),
+      api.get(`/questions/exam/${examId}`),
+    ])
+      .then(([examRes, qRes]) => {
+        setExam(examRes.data.exam);
+        setQuestions(qRes.data.questions || []);
+        setTimeLeft((examRes.data.exam?.duration || 30) * 60);
+      })
+      .catch(() => navigate("/dashboard"));
+  }, [examId, navigate]);
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) return;
+    const t = setInterval(() => setTimeLeft((prev) => (prev <= 1 ? 0 : prev - 1)), 1000);
+    return () => clearInterval(t);
+  }, [timeLeft]);
+
+  const currentQuestion = questions[currentIndex];
+  const selectedValue = currentQuestion
+    ? answers[currentQuestion._id] !== undefined
+      ? String(answers[currentQuestion._id])
+      : ""
+    : "";
 
   const handleChange = (event) => {
-    setSelectedValue(event.target.value);
-    const value = event.target.value;
-    setSelectedValue(value);
-
-    setAnswers({
-      ...answers,
-      [currentIndex]: value,
-    })
+    if (!currentQuestion) return;
+    const value = Number(event.target.value);
+    setAnswers((prev) => ({ ...prev, [currentQuestion._id]: value }));
   };
 
-  const controlProps = (item) => ({
-    checked: selectedValue === item,
-    onChange: handleChange,
-    value: item,
-    name: "color-radio-button-demo",
-    inputProps: { "aria-label": item },
-  });
-
-  const questions = [
-    {
-      question: "What is the capital of India this is Good contry in world?",
-      option: [
-        { key: "a", text: "New Delhi" },
-        { key: "b", text: "Mumbai" },
-        { key: "c", text: "Chennai" },
-        { key: "d", text: "Kolkata" },
-      ],
-    },
-    {
-      question: "What is the capital of India this is in world?",
-      option: [
-        { key: "a", text: "New Delhi" },
-        { key: "b", text: "Mumbai" },
-        { key: "c", text: "Chennai" },
-      ],
-    },
-    {
-      question: "What is the capital of India this is Good contry in world?",
-      option: [
-        { key: "a", text: "New Delhi" },
-        { key: "b", text: "Mumbai" },
-        { key: "c", text: "Chennai" },
-        { key: "d", text: "Kolkata" },
-      ],
-    },
-    {
-      question: "What is the capital of India this is Good contry in world?",
-      option: [
-        { key: "a", text: "New Delhi" },
-        { key: "b", text: "Mumbai" },
-        { key: "c", text: "Chennai" },
-        { key: "d", text: "Kolkata" },
-      ],
-    },
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const currentQuestion = questions[currentIndex];
-
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      const nextIndex = currentIndex + 1;
-      
-      setCurrentIndex(currentIndex + 1);
-      setSelectedValue(answers[nextIndex] || "");
-    }
+    if (currentIndex < questions.length - 1) setCurrentIndex(currentIndex + 1);
   };
 
   const handlePrevious = () => {
-    if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-      setCurrentIndex(currentIndex - 1);
-      setSelectedValue(answers[prevIndex] || "");
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+  };
+
+  const handleSubmit = async () => {
+    const answerList = Object.entries(answers).map(([questionId, selectedOptionIndex]) => ({
+      questionId,
+      selectedOptionIndex,
+    }));
+    setSubmitting(true);
+    try {
+      await api.post("/results/submit", { examId, answers: answerList });
+      setSubmitted(true);
+    } catch (err) {
+      alert(err.response?.data?.error || "Submit failed");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const [answers, setAnswers] = useState({});
+  if (!exam) return <div className="p-8 text-center">Loading exam...</div>;
 
-  
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-green-700">Exam Submitted Successfully</h2>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="mt-4 w-full py-2 bg-blue-600 text-white rounded-lg font-semibold"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const mins = Math.floor((timeLeft || 0) / 60);
+  const secs = (timeLeft || 0) % 60;
 
   return (
-    <>
-      <div className="exam mt-5">
-        <div className="exam-box">
-          <div className="h-[97vh] w-full  border-indigo-500/50 ">
-            <div className="relative flex items-center justify-between px-4">
-              <div className="flex flex-col">
-                <div className="text-[14px] mt-1 flex gap-4">
-                  <span>User Name: Kunal</span>
-                  <span>Class: 12th</span>
-                  <span>Marks: 50</span>
+    <div className="exam mt-5">
+      <div className="exam-box">
+        <div className="h-[97vh] w-full border-indigo-500/50">
+          <div className="relative flex items-center justify-between px-4">
+            <div className="flex flex-col">
+              <span className="text-[14px] mt-1">Time: {mins}:{String(secs).padStart(2, "0")}</span>
+            </div>
+            <h1 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-center">
+              {exam.title}
+            </h1>
+            <div className="text-right">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="text-sm text-blue-600"
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
+          <div className="w-full border-indigo-500/50 mt-2" />
+          {currentQuestion ? (
+            <>
+              <div className="exam-format-box flex items-center justify-center mt-10">
+                <div className="w-full max-w-3xl rounded-md border border-indigo-500/50 p-4">
+                  <h1 className="text-center mt-1">
+                    Q{currentIndex + 1}. {currentQuestion.questionText} ({currentQuestion.marks} marks)
+                  </h1>
                 </div>
               </div>
-
-              <h1 className="absolute left-1/2 transform -translate-x-1/2 text-3xl font-bold text-center">Select Exam: jee</h1>
-
-              <div className="text-right">
-                <StopWatch />
-                <div className="text-[14px] mt-1">Date: 12/3/2025</div>
+              <div className="flex flex-col items-center justify-center mt-6 gap-3 max-w-3xl mx-auto">
+                {currentQuestion.options.map((opt, idx) => (
+                  <div
+                    key={idx}
+                    className="option w-full border-2 flex items-center rounded-md border-indigo-500/50 pl-4 py-2"
+                  >
+                    <Radio
+                      value={idx}
+                      checked={selectedValue === String(idx)}
+                      onChange={handleChange}
+                    />
+                    <span className="ml-2">{opt.text}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className=" w-full  border-indigo-500/50 mt-2"></div>
-            <div className="exam-format-box flex items-center justify-center mt-10">
-              <div className="w-[150vh] h-[5vh]  rounded-md border-indigo-500/50 ">
-                <h1 className="text-center mt-1">
-                  Q{currentIndex + 1}. {currentQuestion.question}
-                </h1>
-              </div>
-            </div>
-            {currentQuestion.option.map((opt) => (
-              <div className="exam-options-box flex flex-col items-center justify-center mt-10  gap-5 ">
-                <div
-                  key={opt.key}
-                  className="option w-[150vh] h-[5vh] border-2 flex items-center rounded-md border-indigo-500/50 pl-4"
-                >
-                  <Radio
-                    value={opt.key}
-                    checked={selectedValue === opt.key}
-                    onChange={handleChange}
-                  />
-                  <span className="ml-2">
-                    {opt.key.toUpperCase()}. {opt.text}
-                  </span>
-                </div>
-               
-              </div>
-            ))}
-            <div className="w-[200vh] h-[10vh] mt-5">
-              <div className="text-end mr-20 mt-5">
-                {
-                  currentIndex === questions.length - 1 ? (
-                    <Link to='/'>
-                    <Button onClick={()=> alert("submit", answers)} className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black">Submit Exam</Button>
-                    </Link>
-                  ): (
-                        <Button
-                  onClick={handleNext}
-                  disabled={currentIndex === questions.length - 1}
-                  className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black"
-                >
-                  Next
-                  <GrFormNext className="!text-[16px]" />
-                </Button>
-                  )
-                }
-              
-              </div>
-              <div className="text-start ml-20 mt-[-30px]">
-                <Button
-                  onClick={handlePrevious}
-                  disabled={currentIndex === 0}
-                  className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black"
-                >
-                  <GrFormPrevious className="!text-[16px]" />
-                  Previous
-                </Button>
-              </div>
-             
-               
-            </div>
-            <div className="flex items-center justify-center mt-[-50px]">
-              <img
-                src="https://imgs.search.brave.com/oC2Mt26iiUVvhY1CoB11gu6s9K2n5pNv0YsW3P6ygYo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS12ZWN0/b3IvZmxhdC1pbGx1/c3RyYXRpb24tcmVh/Y3QtbmF0aXZlLXBy/b2dyYW1tZXItY29u/Y2VwdC1pbGx1c3Ry/YXRpb24td2Vic2l0/ZXMtbGFuZGluZy1w/YWdlcy1tb2JpbGUt/YXBwbGljYXRpb25z/LXBvc3RlcnMtYmFu/bmVyc18xMDgwNjEt/NzM2LmpwZz9zZW10/PWFpc19oeWJyaWQm/dz03NDAmcT04MA"
-                alt=""
-                className="w-[40vh] rounded-md"
-              />
-            </div>
+            </>
+          ) : (
+            <p className="text-center mt-8">No questions in this exam.</p>
+          )}
+          <div className="flex justify-between max-w-3xl mx-auto mt-8 px-4">
+            <Button
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black"
+            >
+              <GrFormPrevious className="!text-[16px]" /> Previous
+            </Button>
+            {currentIndex === questions.length - 1 ? (
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting || questions.length === 0}
+                className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black"
+              >
+                {submitting ? "Submitting..." : "Submit Exam"}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNext}
+                disabled={currentIndex === questions.length - 1}
+                className="!bg-[#FFF7E6] hover:!bg-zinc-400 !text-black"
+              >
+                Next <GrFormNext className="!text-[16px]" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

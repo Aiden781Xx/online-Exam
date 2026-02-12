@@ -1,51 +1,109 @@
-import Exam from "../models/examModel.js";
+import Exam from "../models/Exam.js";
+import Question from "../models/Question.js";
+import Result from "../models/Result.js";
 
 export const createExam = async (req, res) => {
   try {
-    // Explicit mapping from request body
     const {
-      examName,
-      class: className,
+      title,
       subject,
-      examDate,
+      class: examClass,
+      section,
       duration,
       totalMarks,
-      questions,
-      isActive,
     } = req.body;
-
-    // Basic validation
-    if (!examName || !className || !examDate || !duration || !totalMarks) {
-      return res.status(400).json({ success: false, message: "Missing required exam fields" });
+    if (!title || !subject || !examClass || !section || !duration || !totalMarks) {
+      return res
+        .status(400)
+        .json({ success: false, error: "All exam fields are required" });
     }
-
-    // Validate questions array exists and is not empty
-    if (!Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ success: false, message: "Questions array is required and cannot be empty" });
-    }
-
-    // Validate each question shape minimally
-    for (const q of questions) {
-      if (!q.questionText || !Array.isArray(q.options) || typeof q.correctAnswer === "undefined") {
-        return res.status(400).json({ success: false, message: "Each question must have questionText, options and correctAnswer" });
-      }
-    }
-
-    // Create exam with inline questions and inject createdBy from teacher middleware
     const exam = await Exam.create({
-      examName,
-      class: className,
+      title,
       subject,
-      examDate,
-      duration,
-      totalMarks,
-      questions,
-      isActive: typeof isActive === "boolean" ? isActive : true,
-      createdBy: req.teacher._id,
+      class: examClass,
+      section,
+      duration: Number(duration),
+      totalMarks: Number(totalMarks),
+      createdBy: req.user.id,
     });
+    res.status(201).json({ success: true, exam });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
-    res.status(201).json({ success: true, message: "Exam created successfully", exam });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Exam creation failed", error: error.message });
+export const getAllExams = async (req, res) => {
+  try {
+    const exams = await Exam.find()
+      .populate("createdBy", "name")
+      .sort({ createdAt: -1 });
+    res.json({ success: true, exams });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getExamsForStudent = async (req, res) => {
+  try {
+    const student = req.user;
+    const exams = await Exam.find({
+      class: student.class,
+      section: student.section,
+    })
+      .populate("createdBy", "name")
+      .sort({ createdAt: -1 });
+    const results = await Result.find({ studentId: student.id }).select(
+      "examId"
+    );
+    const submittedExamIds = results.map((r) => r.examId.toString());
+    const examsWithStatus = exams.map((exam) => ({
+      ...exam.toObject(),
+      alreadySubmitted: submittedExamIds.includes(exam._id.toString()),
+    }));
+    res.json({ success: true, exams: examsWithStatus });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getExamById = async (req, res) => {
+  try {
+    const exam = await Exam.findById(req.params.id).populate(
+      "createdBy",
+      "name"
+    );
+    if (!exam)
+      return res.status(404).json({ success: false, error: "Exam not found" });
+    res.json({ success: true, exam });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const updateExam = async (req, res) => {
+  try {
+    const exam = await Exam.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!exam)
+      return res.status(404).json({ success: false, error: "Exam not found" });
+    res.json({ success: true, exam });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const deleteExam = async (req, res) => {
+  try {
+    const exam = await Exam.findByIdAndDelete(req.params.id);
+    if (!exam)
+      return res.status(404).json({ success: false, error: "Exam not found" });
+    await Question.deleteMany({ examId: exam._id });
+    await Result.deleteMany({ examId: exam._id });
+    res.json({ success: true, message: "Exam deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
