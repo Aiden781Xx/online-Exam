@@ -1,9 +1,10 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Lazy imports
 const Navbar = lazy(() => import("./components/Navbar/Index"));
+const Dashboard = lazy(() => import("./components/Dashboard/Index"));
 const ExamFormat = lazy(() => import("./components/ExamFormat/Index"));
+const Results = lazy(() => import("./components/Results/Index"));
 
 const App = () => {
   return (
@@ -11,7 +12,10 @@ const App = () => {
       <Suspense fallback={<h2 style={{ textAlign: "center" }}>Loading...</h2>}>
         <Routes>
           <Route path="/" element={<Navbar />} />
-          <Route path="/ExamFormat" element={<ExamFormat />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/exam/:examId" element={<ExamFormat />} />
+          <Route path="/results" element={<Results />} />
+          <Route path="/ExamFormat" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

@@ -1,122 +1,358 @@
-<p align="center">
-  <a href="" rel="noopener">
- <img width=200px height=200px src="https://i.imgur.com/FxL5qM0.jpg" alt="Bot logo"></a>
-</p>
+# 📚 Online Exam System
 
-<h3 align="center">Project Title</h3>
+> A complete school-based Online Examination Platform with Role-Based Access Control (Student, Teacher, Principal)
 
-<div align="center">
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Node](https://img.shields.io/badge/Node.js-v18+-blue)
+![React](https://img.shields.io/badge/React-v19+-blue)
+![Database](https://img.shields.io/badge/MongoDB-Atlas-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![Platform](https://img.shields.io/badge/platform-reddit-orange.svg)](https://www.reddit.com/user/Wordbook_Bot)
-[![GitHub Issues](https://img.shields.io/github/issues/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/pulls)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+## ✨ Live Services
 
-</div>
+| Service | URL | Status |
+|---------|-----|--------|
+| Backend API | http://localhost:8000 | ✅ Running |
+| Student Portal | http://localhost:5173 | ✅ Running |
+| Teacher Portal | http://localhost:5174 | ✅ Running |
+
+## 🎯 Key Features
+
+### 👨‍🎓 Student Portal
+- **Simple Login**: No password needed! Just provide name, class, section, roll no
+- **Browse Exams**: See all exams available for their class/section
+- **Take Exams**: MCQ-based interface with timer and question navigation
+- **View Results**: Check marks, percentage, and submission dates
+- **Auto-Grading**: Instant result calculation after submission
+
+### 👨‍🏫 Teacher Portal  
+- **Create Exams**: Define exam details with custom duration and total marks
+- **Manage Questions**: Add MCQ questions with image support
+- **View Results**: See student performance and analytics
+- **Export**: Download results as professional Excel files
+- **Edit/Delete**: Manage exams as needed
+
+### 🔐 Principal Dashboard
+- **View All Results**: Access results from all classes and exams
+- **Advanced Filtering**: Filter by class, section, exam, or subject
+- **Master Reports**: Export comprehensive institution-wide data
+- **Analytics**: View performance trends and statistics
 
 ---
-
-<p align="center"> 🤖 Few lines describing what your bot doe
-    <br> 
-</p>
 
 ## 📝 Table of Contents
 
-- [About](#about)
-- [Demo / Working](#demo)
-- [How it works](#working)
-- [Usage](#usage)
-- [Getting Started](#getting_started)
-- [Deploying your own bot](#deployment)
-- [Built Using](#built_using)
-- [TODO](../TODO.md)
-- [Contributing](../CONTRIBUTING.md)
-- [Authors](#authors)
-- [Acknowledgments](#acknowledgement)
-
-## 🧐 About <a name = "about"></a>
-
-Write about 1-2 paragraphs describing the purpose of your bot.
-
-## 🎥 Demo / Working <a name = "demo"></a>
-
-![Working](https://media.giphy.com/media/20NLMBm0BkUOwNljwv/giphy.gif)
-
-## 💭 How it works <a name = "working"></a>
-
-The bot first extracts the word from the comment and then fetches word definitions, part of speech, example and source from the Oxford Dictionary API.
-
-If the word does not exist in the Oxford Dictionary, the Oxford API then returns a 404 response upon which the bot then tries to fetch results form the Urban Dictionary API.
-
-The bot uses the Pushshift API to fetch comments, PRAW module to reply to comments and Heroku as a server.
-
-The entire bot is written in Python 3.6
-
-## 🎈 Usage <a name = "usage"></a>
-
-To use the bot, type:
-
-```
-!dict word
-```
-
-The first part, i.e. "!dict" **is not** case sensitive.
-
-The bot will then give you the Oxford Dictionary (or Urban Dictionary; if the word does not exist in the Oxford Dictionary) definition of the word as a comment reply.
-
-### Example:
-
-> !dict what is love
-
-**Definition:**
-
-Baby, dont hurt me~
-Dont hurt me~ no more.
-
-**Example:**
-
-Dude1: Bruh, what is love?
-Dude2: Baby, dont hurt me, dont hurt me- no more!
-Dude1: dafuq?
-
-**Source:** https://www.urbandictionary.com/define.php?term=what%20is%20love
+- [Features](#-key-features)
+- [Technologies](#-technology-stack)
+- [Setup](#-quick-setup)
+- [Demo Accounts](#-demo-accounts)
+- [Workflow](#-complete-workflow)
+- [Project Structure](#-project-structure)
+- [API Endpoints](#-api-endpoints)
+- [Database](#-database-schemas)
+- [Deployment](#-deployment-guide)
+- [Troubleshooting](#-troubleshooting)
+- [Documentation](#-documentation-files)
 
 ---
 
-<sup>Beep boop. I am a bot. If there are any issues, contact my [Master](https://www.reddit.com/message/compose/?to=PositivePlayer1&subject=/u/Wordbook_Bot)</sup>
-
-<sup>Want to make a similar reddit bot? Check out: [GitHub](https://github.com/kylelobo/Reddit-Bot)</sup>
-
-## 🏁 Getting Started <a name = "getting_started"></a>
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
+## 🚀 Quick Setup (5 minutes)
 
 ### Prerequisites
+- Node.js v18+
+- npm v9+
+- MongoDB (Cloud/Local)
+- Modern Browser
 
-What things you need to install the software and how to install them.
+### Installation
 
-```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running.
-
-Say what the step will be
-
-```
-Give the example
+**1. Clone/Navigate to project:**
+```bash
+cd online-Exam
 ```
 
-And repeat
+**2. Start Backend:**
+```bash
+cd server
+npm install
+npm start
+# Runs on http://localhost:8000
+```
+
+**3. Start Student App:**
+```bash
+cd students
+npm install
+npm run dev
+# Runs on http://localhost:5173
+```
+
+**4. Start Teacher App:**
+```bash
+cd Teacher
+npm install
+npm run dev
+# Runs on http://localhost:5174
+```
+
+**All running! Open URLs above in your browser.**
+
+---
+
+## 👥 Demo Accounts
+
+### Student Login
+```
+No password needed!
+Just enter: Name, Father Name, Class (10), Section (A), Roll No (001)
+```
+
+### Teacher
+```
+Username: teacher
+Password: teacher123
+```
+
+### Alternative Teacher
+```
+Username: testshivamUser
+Password: testshivam123
+```
+
+### Principal
+```
+Username: principal
+Password: principal123
+```
+
+---
+
+## 📊 Technology Stack
+
+### Backend
+```
+✅ Node.js + Express.js
+✅ MongoDB (Mongoose ODM)
+✅ JWT Authentication
+✅ Cloudinary (File Storage)
+✅ ExcelJS (Report Generation)
+✅ Bcrypt (Password Hashing)
+```
+
+### Frontend
+```
+✅ React 19 + Vite
+✅ React Router DOM
+✅ Axios (HTTP Client)
+✅ Tailwind CSS
+✅ Material-UI Components
+✅ React Icons
+```
+
+---
+
+## 📂 Directory Structure
 
 ```
-until finished
+online-Exam/
+├── server/                    # Node.js Backend
+│   ├── models/               # MongoDB schemas
+│   ├── controllers/          # Business logic
+│   ├── routes/               # API endpoints
+│   ├── middleware/           # Auth & validation
+│   ├── utils/                # Helpers
+│   ├── config/               # Database config
+│   ├── app.js               # Express app
+│   ├── seed.js              # Initialize data
+│   └── .env                 # Environment variables
+│
+├── students/                 # React Student App
+│   └── src/components/      # UI components
+│
+├── Teacher/                  # React Teacher App
+│   └── src/components/      # UI components
+│
+└── 📄 Documentation Files
+    ├── README.md            # This file
+    ├── SETUP_GUIDE.md       # Detailed setup
+    ├── TESTING_GUIDE.md     # Test procedures
+    └── QUICK_REFERENCE.md   # Developer reference
 ```
 
-End with an example of getting some data out of the system or using it for a little demo.
+---
+
+## 🌐 API Endpoints
+
+### Auth
+```bash
+POST /api/auth/student/login       # Student login/register
+POST /api/auth/teacher/login       # Teacher login
+POST /api/auth/principal/login     # Principal login
+```
+
+### Exams
+```bash
+GET  /api/exams/student            # Get student exams
+GET  /api/exams                    # Get all exams
+POST /api/exams                    # Create exam
+GET  /api/exams/:id                # Get exam details
+PUT  /api/exams/:id                # Update exam
+DELETE /api/exams/:id              # Delete exam
+```
+
+### Questions
+```bash
+GET  /api/questions/exam/:id       # Get questions
+POST /api/questions                # Add question
+PUT  /api/questions/:id            # Update
+DELETE /api/questions/:id          # Delete
+```
+
+### Results
+```bash
+POST /api/results/submit           # Submit exam
+GET  /api/results/student          # My results
+GET  /api/results/exam/:id         # Exam results
+GET  /api/results/export/excel     # Export Excel
+```
+
+---
+
+## 🗄️ Database Schemas
+
+**Student**
+```javascript
+{ name, fatherName, class, section, rollNo, role: "student" }
+```
+
+**Teacher**
+```javascript
+{ username, password (encrypted), name, email, role: "teacher"|"principal" }
+```
+
+**Exam**
+```javascript
+{ title, subject, class, section, duration, totalMarks, createdBy }
+```
+
+**Question**
+```javascript
+{ examId, questionText, options: [{text, isCorrect}], marks }
+```
+
+**Result**
+```javascript
+{ studentId, examId, answers, totalMarks, marksObtained, percentage }
+```
+
+---
+
+## 🔐 Security Features
+
+✅ JWT Authentication (7-day expiry)
+✅ Password Hashing (Bcrypt)
+✅ Role-Based Access Control
+✅ CORS Protection
+✅ Environment Variables
+✅ Input Validation
+✅ Error Handling
+
+---
+
+## 📖 Documentation Files
+
+- **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Complete setup instructions
+- **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing checklist
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Developer reference
+
+---
+
+## 🚀 Deployment
+
+### Backend (Heroku/Railway/Render)
+```bash
+# Set environment variables
+# Deploy Node.js app
+```
+
+### Frontend (Vercel/Netlify)
+```bash
+cd students && npm run build  # Build student app
+cd ../Teacher && npm run build # Build teacher app
+# Deploy dist/ folders
+```
+
+---
+
+## 🆘 Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| MongoDB error | Check MONGO_URI in .env |
+| API 404 | Verify backend on port 8000 |
+| Blank page | Clear browser cache |
+| Image upload fails | Check Cloudinary keys |
+| Can't create exam | Ensure teacher is logged in |
+
+---
+
+## 📞 Support
+
+- **Setup Issues**: See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+- **Testing Help**: See [TESTING_GUIDE.md](./TESTING_GUIDE.md)
+- **API Reference**: See [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
+
+---
+
+## 📄 Environment Variables
+
+```env
+JWT_SECRET=jasonwebtokensecret@123
+PORT=8000
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/online_exam
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+CLOUDINARY_PROJECT_FOLDER=school_exam_system
+```
+
+---
+
+## 🎓 Use Cases
+
+✅ School Examinations
+✅ Competitive Exam Practice
+✅ Online Assessments
+✅ Certifications
+✅ Quizzes & Tests
+
+---
+
+## 📝 License
+
+MIT License - See LICENSE file
+
+---
+
+## ⭐ Features Highlight
+
+- ⚡ Real-Time Result Calculation
+- 📱 Responsive Design (Mobile/Tablet/Desktop)
+- 🔒 Secure JWT Authentication
+- 📊 Advanced Analytics & Reporting
+- 🖼️ Image Support in Questions
+- 📈 Scalable Architecture
+- 🌍 Cloud-Ready Deployment
+
+---
+
+**Version**: 1.0.0 | **Status**: ✅ Production Ready | **Last Updated**: Feb 10, 2026
+
+👉 **Get Started**: Read [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+2. **Student portal:** `cd students` → `npm install` → `npm run dev`. Set `VITE_API_URL=http://localhost:8000/api` in `.env` if needed.
+3. **Teacher portal:** `cd Teacher` → `npm install` → `npm run dev`. Set `VITE_API_URL=http://localhost:8000/api` in `.env` if needed.
+
+Default logins (after `node seed.js` in server): Teacher `teacher` / `teacher123`, Principal `principal` / `principal123`, Test user `testshivamUser` / `testshivam123`. Students log in with Name, Father Name, Class, Section, Roll No.
 
 ## 🚀 Deploying your own bot <a name = "deployment"></a>
 
