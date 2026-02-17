@@ -53,7 +53,7 @@ const SeeResult = () => {
               key={exam._id}
               className="w-[280px] p-5 border rounded-lg shadow-sm bg-white"
             >
-              <div className="mb-1 font-semibold">{exam.title}</div>
+              <div className="mb-1 font-semibold">{exam.examName || exam.title}</div>
               <div className="mb-2 text-sm">{exam.subject} • Class {exam.class}-{exam.section}</div>
               <Link to={`/show-result/${exam._id}`}>
                 <Button className="!bg-blue-400 !text-black !px-4 !py-2 !rounded hover:!bg-zinc-300">

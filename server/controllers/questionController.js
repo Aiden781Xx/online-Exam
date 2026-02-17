@@ -1,31 +1,26 @@
-import Question from "../models/Question.js";
-import Exam from "../models/Exam.js";
+import Exam from "../models/examModel.js";
 
 export const addQuestion = async (req, res) => {
   try {
-    const { examId, questionText, questionImage, options, marks } = req.body;
+    const { examId, questionText, image, options, correctAnswer, marks } = req.body;
     if (!examId || !questionText || !options || !Array.isArray(options)) {
       return res
         .status(400)
-        .json({
-          success: false,
-          error: "examId, questionText and options array required",
-        });
+        .json({ success: false, error: "examId, questionText and options array required" });
     }
     const exam = await Exam.findById(examId);
-    if (!exam)
-      return res.status(404).json({ success: false, error: "Exam not found" });
-    const question = await Question.create({
-      examId,
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+
+    const q = {
       questionText,
-      questionImage: questionImage || null,
-      options: options.map((opt) => ({
-        text: opt.text,
-        isCorrect: !!opt.isCorrect,
-      })),
+      options: options.map((opt) => opt.toString()),
+      correctAnswer: typeof correctAnswer === 'number' ? correctAnswer : 0,
       marks: marks || 1,
-    });
-    res.status(201).json({ success: true, question });
+      image: image || null,
+    };
+    exam.questions.push(q);
+    await exam.save();
+    res.status(201).json({ success: true, question: q });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -35,28 +30,20 @@ export const addMultipleQuestions = async (req, res) => {
   try {
     const { examId, questions } = req.body;
     if (!examId || !questions || !Array.isArray(questions)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: "examId and questions array required",
-        });
+      return res.status(400).json({ success: false, error: "examId and questions array required" });
     }
     const exam = await Exam.findById(examId);
-    if (!exam)
-      return res.status(404).json({ success: false, error: "Exam not found" });
-    const toInsert = questions.map((q) => ({
-      examId,
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+    const toInsert = (questions || []).map((q) => ({
       questionText: q.questionText,
-      questionImage: q.questionImage || null,
-      options: (q.options || []).map((opt) => ({
-        text: opt.text,
-        isCorrect: !!opt.isCorrect,
-      })),
+      options: (q.options || []).map((opt) => opt.toString()),
+      correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
       marks: q.marks || 1,
+      image: q.image || null,
     }));
-    const inserted = await Question.insertMany(toInsert);
-    res.status(201).json({ success: true, count: inserted.length, questions: inserted });
+    exam.questions.push(...toInsert);
+    await exam.save();
+    res.status(201).json({ success: true, count: toInsert.length, questions: toInsert });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -64,10 +51,9 @@ export const addMultipleQuestions = async (req, res) => {
 
 export const getQuestionsByExam = async (req, res) => {
   try {
-    const questions = await Question.find({
-      examId: req.params.examId,
-    }).sort({ createdAt: 1 });
-    res.json({ success: true, questions });
+    const exam = await Exam.findById(req.params.examId).lean();
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+    res.json({ success: true, questions: exam.questions || [] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -75,16 +61,20 @@ export const getQuestionsByExam = async (req, res) => {
 
 export const updateQuestion = async (req, res) => {
   try {
-    const question = await Question.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!question)
-      return res
-        .status(404)
-        .json({ success: false, error: "Question not found" });
-    res.json({ success: true, question });
+    const { examId, questionIndex } = req.params;
+    const { questionText, options, correctAnswer, marks, image } = req.body;
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+    if (questionIndex < 0 || questionIndex >= exam.questions.length)
+      return res.status(404).json({ success: false, error: "Question not found" });
+    const q = exam.questions[questionIndex];
+    q.questionText = questionText || q.questionText;
+    q.options = options ? options.map((o) => o.toString()) : q.options;
+    q.correctAnswer = typeof correctAnswer === 'number' ? correctAnswer : q.correctAnswer;
+    q.marks = typeof marks === 'number' ? marks : q.marks;
+    q.image = typeof image !== 'undefined' ? image : q.image;
+    await exam.save();
+    res.json({ success: true, question: q });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -92,11 +82,13 @@ export const updateQuestion = async (req, res) => {
 
 export const deleteQuestion = async (req, res) => {
   try {
-    const question = await Question.findByIdAndDelete(req.params.id);
-    if (!question)
-      return res
-        .status(404)
-        .json({ success: false, error: "Question not found" });
+    const { examId, questionIndex } = req.params;
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+    if (questionIndex < 0 || questionIndex >= exam.questions.length)
+      return res.status(404).json({ success: false, error: "Question not found" });
+    exam.questions.splice(questionIndex, 1);
+    await exam.save();
     res.json({ success: true, message: "Question deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

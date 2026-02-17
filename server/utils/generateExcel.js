@@ -32,18 +32,18 @@ export async function exportResultsToExcel(results) {
   sheet.getRow(1).font = { bold: true };
 
   results.forEach((r) => {
-    const student = r.studentId || {};
-    const exam = r.examId || {};
+    const student = r.student || {};
+    const exam = r.exam || {};
     sheet.addRow([
       student.name || "-",
       student.fatherName || "-",
       student.class || "-",
       student.section || "-",
       student.rollNo || "-",
-      exam.title || "-",
-      r.totalMarks,
-      r.marksObtained,
-      r.percentage + "%",
+      exam.examName || exam.title || "-",
+      r.totalMarks || r.totalMarks || "-",
+      r.score || r.marksObtained || 0,
+      (r.percentage || 0) + "%",
       r.submittedAt
         ? new Date(r.submittedAt).toLocaleString()
         : "-",

@@ -47,15 +47,15 @@ const ExamFormat = () => {
 
   const currentQuestion = questions[currentIndex];
   const selectedValue = currentQuestion
-    ? answers[currentQuestion._id] !== undefined
-      ? String(answers[currentQuestion._id])
+    ? answers[currentIndex] !== undefined
+      ? String(answers[currentIndex])
       : ""
     : "";
 
   const handleChange = (event) => {
     if (!currentQuestion) return;
     const value = Number(event.target.value);
-    setAnswers((prev) => ({ ...prev, [currentQuestion._id]: value }));
+    setAnswers((prev) => ({ ...prev, [currentIndex]: value }));
   };
 
   const handleNext = () => {
@@ -67,9 +67,9 @@ const ExamFormat = () => {
   };
 
   const handleSubmit = async () => {
-    const answerList = Object.entries(answers).map(([questionId, selectedOptionIndex]) => ({
-      questionId,
-      selectedOptionIndex,
+    const answerList = Object.entries(answers).map(([qIndex, selectedOptionIndex]) => ({
+      questionIndex: Number(qIndex),
+      selectedOption: Number(selectedOptionIndex),
     }));
     setSubmitting(true);
     try {
@@ -112,7 +112,7 @@ const ExamFormat = () => {
               <span className="text-[14px] mt-1">Time: {mins}:{String(secs).padStart(2, "0")}</span>
             </div>
             <h1 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-center">
-              {exam.title}
+              {exam.examName || exam.title}
             </h1>
             <div className="text-right">
               <button
@@ -144,7 +144,7 @@ const ExamFormat = () => {
                       checked={selectedValue === String(idx)}
                       onChange={handleChange}
                     />
-                    <span className="ml-2">{opt.text}</span>
+                    <span className="ml-2">{typeof opt === 'string' ? opt : opt.text}</span>
                   </div>
                 ))}
               </div>

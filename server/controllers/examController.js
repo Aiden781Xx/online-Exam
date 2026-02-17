@@ -1,33 +1,50 @@
-import Exam from "../models/Exam.js";
-import Question from "../models/Question.js";
-import Result from "../models/Result.js";
+import Exam from "../models/examModel.js";
+import Result from "../models/resultModel.js";
 
 export const createExam = async (req, res) => {
   try {
+    console.log('createExam called - content-type:', req.headers['content-type']);
+    console.log('createExam - raw body:', req.body);
+    const body = req.body && Object.keys(req.body).length ? req.body : (req.rawBody ? JSON.parse(req.rawBody || '{}') : {});
     const {
+      examName,
       title,
       subject,
       class: examClass,
       section,
+      examDate,
       duration,
       totalMarks,
-    } = req.body;
-    if (!title || !subject || !examClass || !section || !duration || !totalMarks) {
-      return res
-        .status(400)
-        .json({ success: false, error: "All exam fields are required" });
+      questions,
+      isActive,
+    } = body;
+    
+    // Accept both 'examName' and 'title' for backward compatibility
+    const finalExamName = examName || title;
+    
+    // Validate required fields
+    if (!finalExamName) {
+      return res.status(400).json({ success: false, error: "Exam title is required" });
     }
+    if (!subject || !examClass || duration === undefined || !totalMarks) {
+      return res.status(400).json({ success: false, error: "Missing required exam fields: subject, class, duration, totalMarks" });
+    }
+    
     const exam = await Exam.create({
-      title,
+      examName: finalExamName,
       subject,
       class: examClass,
-      section,
+      section: section || null,
+      examDate: examDate ? new Date(examDate) : new Date(),
       duration: Number(duration),
       totalMarks: Number(totalMarks),
+      questions: Array.isArray(questions) ? questions : [],
+      isActive: typeof isActive === 'boolean' ? isActive : true,
       createdBy: req.user.id,
     });
     res.status(201).json({ success: true, exam });
   } catch (err) {
+    console.error('Exam creation error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -46,16 +63,24 @@ export const getAllExams = async (req, res) => {
 export const getExamsForStudent = async (req, res) => {
   try {
     const student = req.user;
-    const exams = await Exam.find({
-      class: student.class,
-      section: student.section,
-    })
+    // normalize class/section to strings so mismatched types (number vs string)
+    // don't prevent matches. Treat exam.section falsy as "all sections".
+    const studentClass = String(student.class || "");
+    const studentSection = student.section == null ? null : String(student.section);
+
+    const examsAll = await Exam.find({ class: studentClass })
       .populate("createdBy", "name")
       .sort({ createdAt: -1 });
-    const results = await Result.find({ studentId: student.id }).select(
-      "examId"
+
+    const exams = examsAll.filter((exam) => {
+      // if exam.section is falsy (null/''/undefined), treat it as available to all sections
+      if (!exam.section) return true;
+      return String(exam.section) === studentSection;
+    });
+    const results = await Result.find({ student: student.id }).select(
+      "exam"
     );
-    const submittedExamIds = results.map((r) => r.examId.toString());
+    const submittedExamIds = results.map((r) => (r.exam ? r.exam.toString() : null)).filter(Boolean);
     const examsWithStatus = exams.map((exam) => ({
       ...exam.toObject(),
       alreadySubmitted: submittedExamIds.includes(exam._id.toString()),
@@ -100,8 +125,7 @@ export const deleteExam = async (req, res) => {
     const exam = await Exam.findByIdAndDelete(req.params.id);
     if (!exam)
       return res.status(404).json({ success: false, error: "Exam not found" });
-    await Question.deleteMany({ examId: exam._id });
-    await Result.deleteMany({ examId: exam._id });
+    await Result.deleteMany({ exam: exam._id });
     res.json({ success: true, message: "Exam deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

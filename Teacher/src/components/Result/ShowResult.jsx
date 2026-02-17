@@ -64,7 +64,7 @@ const ShowResult = () => {
     <div className="view min-h-screen p-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-center mt-5 font-bold text-3xl">
-          Results {exam ? `: ${exam.title}` : ""}
+          Results {exam ? `: ${exam.examName || exam.title}` : ""}
         </h1>
         <div className="w-full border mt-4" />
         <div className="flex justify-between items-center mt-4 flex-wrap gap-2">

@@ -12,6 +12,7 @@ const AddExam = () => {
     section: "",
     duration: 30,
     totalMarks: 10,
+    examDate: new Date().toISOString().split('T')[0],
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +38,8 @@ const AddExam = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/exams", form);
+      // temporary: use fallback endpoint while server body-parsing issue is being fixed
+      const res = await api.post("/exams/create2", form);
       navigate(`/add-questions/${res.data.exam._id}`);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to create exam");
@@ -121,6 +123,16 @@ const AddExam = () => {
               onChange={handleChange}
             />
           </div>
+          <div>
+            <label className="font-semibold block mb-1">Exam Date</label>
+            <input
+              name="examDate"
+              type="date"
+              className="border w-full mt-1 p-2 rounded-md"
+              value={form.examDate}
+              onChange={handleChange}
+            />
+          </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <div className="flex gap-2">
             <Button
@@ -143,3 +155,5 @@ const AddExam = () => {
     </div>
   );
 };
+
+export default AddExam;

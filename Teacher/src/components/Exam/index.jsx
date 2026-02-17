@@ -74,7 +74,7 @@ const Exam = () => {
                 key={exam._id}
                 className="w-full p-5 border rounded-lg shadow-sm bg-white"
               >
-                <div className="mb-1 font-semibold">{exam.title}</div>
+                <div className="mb-1 font-semibold">{exam.examName || exam.title}</div>
                 <div className="mb-1 text-sm text-gray-600">{exam.subject}</div>
                 <div className="mb-1 text-sm">Class: {exam.class}-{exam.section}</div>
                 <div className="mb-2 text-sm">Marks: {exam.totalMarks} • {exam.duration} min</div>

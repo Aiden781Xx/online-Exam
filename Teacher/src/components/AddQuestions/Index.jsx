@@ -98,7 +98,7 @@ const AddQuestions = () => {
     <div className="min-h-screen p-4">
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Add Questions: {exam.title}</h1>
+          <h1 className="text-2xl font-bold">Add Questions: {exam.examName || exam.title}</h1>
           <div className="flex gap-2">
             <Button className="!bg-blue-500 !text-white" onClick={addNewQuestion}>
               + Add Question

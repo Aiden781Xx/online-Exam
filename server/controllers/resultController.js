@@ -1,5 +1,5 @@
-import Result from "../models/Result.js";
-import Question from "../models/Question.js";
+import Result from "../models/resultModel.js";
+import Exam from "../models/examModel.js";
 import { exportResultsToExcel } from "../utils/generateExcel.js";
 
 export const submitExam = async (req, res) => {
@@ -11,35 +11,50 @@ export const submitExam = async (req, res) => {
         .status(400)
         .json({ success: false, error: "examId and answers array required" });
     }
-    const existing = await Result.findOne({ studentId, examId });
+
+    const existing = await Result.findOne({ student: studentId, exam: examId });
     if (existing)
       return res
         .status(400)
         .json({ success: false, error: "Already submitted this exam" });
-    const questions = await Question.find({ examId });
-    const questionMap = {};
-    questions.forEach((q) => {
-      questionMap[q._id.toString()] = q;
+
+    const exam = await Exam.findById(examId).lean();
+    if (!exam) return res.status(404).json({ success: false, error: "Exam not found" });
+
+    // Calculate score using inline questions
+    let totalMarks = 0;
+    let obtained = 0;
+    const detailedAnswers = answers.map((ans) => {
+      const qIndex = ans.questionIndex;
+      const selectedOption = Number(ans.selectedOption);
+      const q = exam.questions[qIndex];
+      if (!q) return { questionIndex: qIndex, selectedOption, isCorrect: false, marksObtained: 0 };
+      totalMarks += q.marks || 1;
+      const isCorrect = Number.isInteger(selectedOption) && selectedOption === q.correctAnswer;
+      const marksObtained = isCorrect ? (q.marks || 1) : 0;
+      obtained += marksObtained;
+      return { questionIndex: qIndex, selectedOption, isCorrect, marksObtained };
     });
-    let marksObtained = 0;
-    const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
-    answers.forEach((ans) => {
-      const q = questionMap[ans.questionId];
-      if (!q) return;
-      const selected = q.options[ans.selectedOptionIndex];
-      if (selected && selected.isCorrect) marksObtained += q.marks;
-    });
-    const percentage =
-      totalMarks > 0 ? Math.round((marksObtained / totalMarks) * 100) : 0;
+
+    const percentage = totalMarks > 0 ? Math.round((obtained / totalMarks) * 100) : 0;
+
     const result = await Result.create({
-      studentId,
-      examId,
-      answers,
+      student: studentId,
+      exam: examId,
+      answers: detailedAnswers,
       totalMarks,
-      marksObtained,
+      score: obtained,
       percentage,
       status: "graded",
+      examSnapshot: {
+        examName: exam.examName || exam.title || null,
+        subject: exam.subject || null,
+        class: exam.class || null,
+        section: exam.section || null,
+        totalMarks: totalMarks,
+      },
     });
+
     res.status(201).json({ success: true, result });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -48,8 +63,8 @@ export const submitExam = async (req, res) => {
 
 export const getStudentResults = async (req, res) => {
   try {
-    const results = await Result.find({ studentId: req.user.id })
-      .populate("examId", "title subject class section totalMarks duration")
+    const results = await Result.find({ student: req.user.id })
+      .populate("exam", "examName subject class section totalMarks duration")
       .sort({ submittedAt: -1 });
     res.json({ success: true, results });
   } catch (err) {
@@ -59,9 +74,9 @@ export const getStudentResults = async (req, res) => {
 
 export const getResultsByExam = async (req, res) => {
   try {
-    const results = await Result.find({ examId: req.params.examId })
-      .populate("studentId", "name fatherName class section rollNo")
-      .sort({ marksObtained: -1 });
+    const results = await Result.find({ exam: req.params.examId })
+      .populate("student", "name fatherName class section rollNo")
+      .sort({ score: -1 });
     res.json({ success: true, results });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -78,8 +93,8 @@ export const getResultsByClass = async (req, res) => {
     let query = {};
     if (examId) query.examId = examId;
     let results = await Result.find(query)
-      .populate("studentId", "name fatherName class section rollNo")
-      .populate("examId", "title subject")
+      .populate("student", "name fatherName class section rollNo")
+      .populate("exam", "examName subject")
       .sort({ submittedAt: -1 });
     if (classFilter)
       results = results.filter(
@@ -98,8 +113,8 @@ export const getResultsByClass = async (req, res) => {
 export const getAllResults = async (req, res) => {
   try {
     const results = await Result.find()
-      .populate("studentId", "name fatherName class section rollNo")
-      .populate("examId", "title subject")
+      .populate("student", "name fatherName class section rollNo")
+      .populate("exam", "examName subject")
       .sort({ submittedAt: -1 });
     res.json({ success: true, results });
   } catch (err) {
@@ -112,13 +127,13 @@ export const exportToExcel = async (req, res) => {
     const { examId } = req.query;
     let results;
     if (examId) {
-      results = await Result.find({ examId })
-        .populate("studentId", "name fatherName class section rollNo")
-        .populate("examId", "title subject totalMarks");
+      results = await Result.find({ exam: examId })
+        .populate("student", "name fatherName class section rollNo")
+        .populate("exam", "examName subject totalMarks");
     } else {
       results = await Result.find()
-        .populate("studentId", "name fatherName class section rollNo")
-        .populate("examId", "title subject totalMarks");
+        .populate("student", "name fatherName class section rollNo")
+        .populate("exam", "examName subject totalMarks");
     }
     const buffer = await exportResultsToExcel(results);
     res.setHeader(
