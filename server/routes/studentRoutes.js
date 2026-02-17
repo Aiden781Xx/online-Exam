@@ -1,6 +1,8 @@
 import express from "express";
 import { protectStudent } from "../middleware/studentAuthMiddleware.js";
 import { studentLogin, getExamQuestions, submitExam, getAvailableExams } from "../controllers/studentController.js";
+import { validateBody } from "../middleware/validationMiddleware.js";
+import { submitExamSchema } from "../validators/examValidators.js";
 
 const router = express.Router();
 
@@ -13,6 +15,6 @@ router.get("/exams", protectStudent, getAvailableExams);
 router.get("/exam/:examId/questions", protectStudent, getExamQuestions);
 
 // Submit exam - student only
-router.post("/submit-exam", protectStudent, submitExam);
+router.post("/submit-exam", protectStudent, validateBody(submitExamSchema), submitExam);
 
 export default router;

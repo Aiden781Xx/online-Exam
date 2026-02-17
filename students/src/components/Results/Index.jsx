@@ -74,10 +74,10 @@ const Results = () => {
               <tbody>
                 {results.map((r) => (
                   <tr key={r._id} className="border-t">
-                    <td className="p-3">{r.examId?.title}</td>
-                    <td className="p-3">{r.examId?.subject}</td>
+                    <td className="p-3">{r.exam?.examName || r.examId?.title}</td>
+                    <td className="p-3">{r.exam?.subject || r.examId?.subject}</td>
                     <td className="p-3">
-                      {r.marksObtained} / {r.totalMarks}
+                      {r.score || r.marksObtained || 0} / {r.totalMarks}
                     </td>
                     <td className="p-3">{r.percentage}%</td>
                     <td className="p-3">

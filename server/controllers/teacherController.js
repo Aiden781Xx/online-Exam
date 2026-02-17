@@ -1,7 +1,7 @@
 import Teacher from "../models/teacherModel.js";
 import Exam from "../models/examModel.js"
 import Result from "../models/resultModel.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 /**

@@ -4,7 +4,7 @@
  */
 import "dotenv/config";
 import mongoose from "mongoose";
-import Teacher from "./models/Teacher.js";
+import Teacher from "./models/teacherModel.js";
 
 const uri = process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://localhost:27017/online_exam";
 

@@ -45,7 +45,7 @@ const Dashboard = () => {
           <div className="grid gap-4 sm:grid-cols-2">
             {exams.map((exam) => (
               <div key={exam._id} className="bg-white rounded-xl shadow p-4 border border-gray-200">
-                <h3 className="font-semibold text-lg">{exam.title}</h3>
+                <h3 className="font-semibold text-lg">{exam.examName || exam.title}</h3>
                 <p className="text-gray-600 text-sm">{exam.subject} • Class {exam.class}-{exam.section}</p>
                 <p className="text-gray-600 text-sm">Duration: {exam.duration} min • Total: {exam.totalMarks} marks</p>
                 {exam.alreadySubmitted ? (

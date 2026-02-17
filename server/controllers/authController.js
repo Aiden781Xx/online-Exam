@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import Student from "../models/Student.js";
-import Teacher from "../models/Teacher.js";
+import Student from "../models/studentModel.js";
+import Teacher from "../models/teacherModel.js";
 
 const generateToken = (payload, role) => {
   return jwt.sign(
@@ -12,13 +12,24 @@ const generateToken = (payload, role) => {
 
 export const studentLogin = async (req, res) => {
   try {
+    // defensive: accept parsed body or fallback to rawBody JSON (some clients may send unexpected content-type)
+    let body = req.body;
+    if ((!body || Object.keys(body).length === 0) && req.rawBody) {
+      try {
+        body = JSON.parse(req.rawBody);
+      } catch (e) {
+        // ignore parse error and let validation below handle missing fields
+        body = {};
+      }
+    }
+
     const {
       name,
       fatherName,
       class: studentClass,
       section,
       rollNo,
-    } = req.body;
+    } = body || {};
     if (!name || !fatherName || !studentClass || !section || !rollNo) {
       return res
         .status(400)
@@ -67,7 +78,7 @@ export const studentLogin = async (req, res) => {
 
 export const teacherLogin = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
     if (!username || !password) {
       return res
         .status(400)
@@ -97,7 +108,7 @@ export const teacherLogin = async (req, res) => {
 
 export const principalLogin = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
     if (!username || !password) {
       return res
         .status(400)
